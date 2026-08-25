@@ -25,8 +25,9 @@ same point set, which preserves both its low discrepancy and its
 unbiasedness.
 
 We first visualize the three sampling schemes on the sphere, then measure
-how fast each one converges to a reference Sliced Wasserstein distance
-between two 3D distributions.
+how fast each one converges to the true Sliced Wasserstein distance
+between two point clouds -- known here in closed form, with no
+approximation error left except from the number of projections itself.
 
 .. [93] Nguyen, K., Bariletto, N., & Ho, N. (2024). Quasi-Monte Carlo for
     3D Sliced Wasserstein. International Conference on Learning
@@ -49,7 +50,7 @@ from ot.sliced import get_random_projections, get_projections_spiral
 ##############################################################################
 # Visualize the three sampling schemes on the sphere
 # ----------------------------------------------------
-# We draw ~1000 directions on :math:`S^2` with each scheme:
+# We draw a few hundred directions on :math:`S^2` with each scheme:
 #
 # - ``uniform``: directions are Gaussian vectors normalized to unit norm
 #   (standard Monte Carlo sampling of the sphere).
@@ -61,7 +62,7 @@ from ot.sliced import get_random_projections, get_projections_spiral
 #   The rotation makes the estimator unbiased while keeping the points
 #   as evenly spread out as the deterministic QSW set.
 
-n_projections = 1000
+n_projections = 500
 d = 3
 seed = 42
 
@@ -98,24 +99,40 @@ pl.show()
 ##############################################################################
 # Convergence to the true Sliced Wasserstein distance
 # ------------------------------------------------------
-# We now compare how fast each sampling scheme converges to a reference SWD
-# value as the number of projections grows, on two 3D Gaussian samples.
-# For a fixed number of projections, ``uniform`` and ``rqsw`` are random
-# estimators (we average their error over several trials), while ``qsw`` is
-# deterministic (a single value per number of projections).
+# We now compare how fast each sampling scheme converges to the *true*
+# SWD as the number of projections grows. To get a reference value with
+# **zero** approximation error -- not even from a finite number of
+# samples -- we build ``Xt`` as a pure translation of ``Xs`` by a fixed
+# vector :math:`\delta`: ``Xt = Xs + delta``.
+#
+# For a rigid translation, the classical 1D Wasserstein identity
+# :math:`W_2(\mu, \mu + c) = |c|` holds *exactly*, for any distribution
+# shape and any (even very small) sample size -- no law-of-large-numbers
+# argument, no Gaussian assumption, just an algebraic identity of optimal
+# transport on the line. Projected onto any direction :math:`\theta`, this
+# gives :math:`W_2(\theta_\# \mu, \theta_\# \nu) = |\theta^T \delta|`
+# exactly, and averaging the square over :math:`\theta` uniform on
+# :math:`S^{d-1}` gives the closed-form identity
+#
+# .. math::
+#     \mathcal{SWD}_2(\mu, \nu) = \frac{\|\delta\|}{\sqrt{d}}
+#
+# Because this holds regardless of ``Xs``'s shape or size, the *only*
+# remaining source of error in the experiment below is the number of
+# projections -- exactly the quantity we want to study.
 
 rng = np.random.RandomState(0)
 
 n_samples = 200
-Xs = rng.multivariate_normal([0, 0, 0], np.eye(3), n_samples)
-Xt = rng.multivariate_normal([1.5, 1.0, -0.5], np.eye(3), n_samples)
+delta = np.array([1.5, 1.0, -0.5])
+Xs = rng.uniform(-2, 2, (n_samples, d))
+Xt = Xs + delta
 
-# "Ground truth" SWD, estimated with a very large number of uniform
-# projections so that the residual Monte-Carlo error is negligible.
-sw_true = ot.sliced_wasserstein_distance(Xs, Xt, n_projections=200000, seed=0)
+# Exact reference: no approximation at all, at any cost.
+sw_true = np.linalg.norm(delta) / np.sqrt(d)
 
-n_proj_list = [10, 20, 50, 100, 200, 500, 1000]
-n_trials = 20
+n_proj_list = [10, 20, 50, 100, 200, 500]
+n_trials = 8
 
 errors_uniform = np.zeros((n_trials, len(n_proj_list)))
 errors_rqsw = np.zeros((n_trials, len(n_proj_list)))
@@ -161,7 +178,7 @@ pl.plot(n_proj_list, errors_qsw, "^-", label="QSW (deterministic)")
 pl.xscale("log")
 pl.yscale("log")
 pl.xlabel("Number of projections")
-pl.ylabel("Absolute error to reference SWD")
+pl.ylabel("Absolute error to the true SWD")
 pl.title("Convergence of the Sliced Wasserstein estimate (3D)")
 pl.legend()
 pl.show()
