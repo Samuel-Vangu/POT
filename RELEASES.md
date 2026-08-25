@@ -1,4 +1,13 @@
 # Releases
+## 0.9.8dev
+*August 2026*
+
+#### New features
+
+- Add Quasi-Monte Carlo sliced Wasserstein sampling (QSW/RQSW) via generalized
+  spiral points, selectable with `sampling_slices` in `sliced_wasserstein_distance`,
+  as described in [93] (PR #xxx)
+
 
 ## 0.9.7.post1
 

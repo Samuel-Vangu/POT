@@ -480,3 +480,5 @@ Artificial Intelligence.
 \[92] Xie, Y., Wang, X., Wang, R., & Zha, H. (2020, August). 
 [A fast proximal point method for computing exact wasserstein distance.](https://proceedings.mlr.press/v115/xie20b/xie20b.pdf) In Uncertainty in artificial intelligence (pp. 433-453). PMLR.
 
+\[93] Nguyen, K., Bariletto, N., & Ho, N. (2024). [Quasi-Monte Carlo for 3D Sliced Wasserstein](https://arxiv.org/abs/2309.11713). International Conference on Learning Representations (ICLR).
+

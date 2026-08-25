@@ -14,6 +14,7 @@ from ._utils import (
     get_random_projections,
     get_projections_sphere,
     projection_sphere_to_circle,
+    get_projections_spiral,
 )
 from ._sliced_distances import (
     sliced_wasserstein_distance,
@@ -38,4 +39,5 @@ __all__ = [
     "sliced_wasserstein_sphere",
     "sliced_wasserstein_sphere_unif",
     "linear_sliced_wasserstein_sphere",
+    "get_projections_spiral",
 ]
