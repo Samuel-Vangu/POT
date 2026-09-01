@@ -40,10 +40,10 @@ def sliced_wasserstein_distance(
     - :math:`\theta_\# \mu` stands for the pushforwards of the projection :math:`X \in \mathbb{R}^d \mapsto \langle \theta, X \rangle`
 
     By default, the projection directions :math:`\theta` are sampled uniformly
-    at random. Setting ``sampling_slices`` to ``"qsw"`` or ``"rqsw"`` instead
+    at random. Setting ``sampling_slices`` to ``"spiral_qmc"`` or ``"randomized_spiral_qmc"`` instead
     uses Quasi-Monte Carlo point sets on the sphere (generalized spiral
     points), which can reduce the approximation error for a given
-    ``n_projections`` [93]. These two options are currently
+    ``n_projections`` [95]. These two options are
     only implemented for ``dim == 3``.
 
     Parameters
@@ -65,7 +65,7 @@ def sliced_wasserstein_distance(
         used in this case)
     seed: int or RandomState or None, optional
         Seed used for random number generator. Ignored if
-        ``sampling_slices="qsw"`` (the deterministic point set does not
+        ``sampling_slices="spiral_qmc"`` (the deterministic point set does not
         depend on a seed).
     log: bool, optional
         if True, sliced_wasserstein_distance returns the projections used and their associated EMD.
@@ -89,10 +89,10 @@ def sliced_wasserstein_distance(
 
         - ``"uniform"`` (default): directions sampled uniformly at random on
           the sphere (Monte Carlo).
-        - ``"qsw"``: deterministic Quasi-Sliced Wasserstein directions via
+        - ``"spiral_qmc"``: deterministic Quasi-Sliced Wasserstein directions via
           generalized spiral points. Only implemented for ``dim == 3``.
-        - ``"rqsw"``: Randomized Quasi-Sliced Wasserstein -- the same spiral
-          point set as ``"qsw"``, with a random rotation applied, giving an
+        - ``"randomized_spiral_qmc"``: Randomized Quasi-Sliced Wasserstein -- the same spiral
+          point set as ``"spiral_qmc"``, with a random rotation applied, giving an
           unbiased estimator suitable for stochastic optimization. Only
           implemented for ``dim == 3``.
 
@@ -116,7 +116,8 @@ def sliced_wasserstein_distance(
     ----------
 
     .. [31] Bonneel, Nicolas, et al. "Sliced and radon wasserstein barycenters of measures." Journal of Mathematical Imaging and Vision 51.1 (2015): 22-45
-    .. [93] Nguyen, K., Bariletto, N., & Ho, N. (2024). "Quasi-Monte Carlo for 3D Sliced Wasserstein." International Conference on Learning Representations (ICLR).
+    .. [95] Nguyen, K., Bariletto, N., & Ho, N. (2024). "Quasi-Monte Carlo for 3D Sliced Wasserstein." International Conference on Learning Representations (ICLR).
+    .. [96] Rakhmanov, E. A., Saff, E. B., & Zhou, Y. M. (1994). "Minimal Discrete Energy on the Sphere." Mathematical Research Letters, 1(6), 647-662.
     """
 
     X_s, X_t = list_to_array(X_s, X_t)
@@ -142,23 +143,27 @@ def sliced_wasserstein_distance(
 
     d = X_s.shape[1]
 
+    randomized = sampling_slices.startswith("randomized_")
+    method = sampling_slices.removeprefix("randomized_")
+
     if projections is None:
         if sampling_slices == "uniform":
             projections = get_random_projections(
                 d, n_projections, seed, backend=nx, type_as=X_s
             )
-        elif sampling_slices == "qsw":
+        elif method == "spiral_qmc":
             projections = get_projections_spiral(
-                d, n_projections, randomized=False, backend=nx, type_as=X_s
-            )
-        elif sampling_slices == "rqsw":
-            projections = get_projections_spiral(
-                d, n_projections, randomized=True, seed=seed, backend=nx, type_as=X_s
+                d,
+                n_projections,
+                randomized=randomized,
+                seed=seed,
+                backend=nx,
+                type_as=X_s,
             )
         else:
             raise ValueError(
                 f"Unknown sampling_slices method '{sampling_slices}', "
-                "must be one of 'uniform', 'qsw', 'rqsw'"
+                "must be one of 'uniform', 'spiral_qmc', 'randomized_spiral_qmc'"
             )
     else:
         n_projections = projections.shape[1]

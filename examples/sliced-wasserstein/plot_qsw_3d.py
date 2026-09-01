@@ -5,7 +5,7 @@ Quasi-Monte Carlo Sliced Wasserstein in 3D
 =========================================================
 
 This example illustrates the Quasi-Sliced Wasserstein (QSW) and Randomized
-Quasi-Sliced Wasserstein (RQSW) sampling schemes introduced in [93], and
+Quasi-Sliced Wasserstein (RQSW) sampling schemes introduced in [95], and
 compares them to the default uniform (Monte Carlo) sampling of slicing
 directions.
 
@@ -29,9 +29,12 @@ how fast each one converges to the true Sliced Wasserstein distance
 between two point clouds -- known here in closed form, with no
 approximation error left except from the number of projections itself.
 
-.. [93] Nguyen, K., Bariletto, N., & Ho, N. (2024). Quasi-Monte Carlo for
+.. [95] Nguyen, K., Bariletto, N., & Ho, N. (2024). Quasi-Monte Carlo for
     3D Sliced Wasserstein. International Conference on Learning
     Representations (ICLR).
+.. [96] Rakhmanov, E. A., Saff, E. B., & Zhou, Y. M. (1994). Minimal
+    Discrete Energy on the Sphere. Mathematical Research Letters, 1(6),
+    647-662.
 """
 
 # Author: Samuel Vangu <samuelvangu0@gmail.com>
@@ -54,13 +57,14 @@ from ot.sliced import get_random_projections, get_projections_spiral
 #
 # - ``uniform``: directions are Gaussian vectors normalized to unit norm
 #   (standard Monte Carlo sampling of the sphere).
-# - ``qsw``: deterministic generalized spiral points -- a simple,
-#   closed-form low-discrepancy point set (Rakhmanov, Saff & Zhou, 1994).
-#   The same call always returns the same points.
-# - ``rqsw``: the same spiral point set, rotated by a random (3, 3)
-#   rotation matrix (drawn via QR decomposition of a Gaussian matrix).
-#   The rotation makes the estimator unbiased while keeping the points
-#   as evenly spread out as the deterministic QSW set.
+# - ``spiral_qmc``: deterministic generalized spiral points -- a simple,
+#   closed-form low-discrepancy point set (Rakhmanov, Saff & Zhou, 1994)
+#   [96]. The same call always returns the same points.
+# - ``randomized_spiral_qmc``: the same spiral point set, rotated by a
+#   random (3, 3) rotation matrix (drawn via QR decomposition of a
+#   Gaussian matrix). The rotation makes the estimator unbiased while
+#   keeping the points as evenly spread out as the deterministic spiral
+#   set.
 
 n_projections = 500
 d = 3
@@ -144,13 +148,17 @@ for j, n_proj in enumerate(n_proj_list):
             Xs, Xt, n_projections=n_proj, sampling_slices="uniform", seed=t
         )
         sw_rqsw = ot.sliced_wasserstein_distance(
-            Xs, Xt, n_projections=n_proj, sampling_slices="rqsw", seed=t
+            Xs,
+            Xt,
+            n_projections=n_proj,
+            sampling_slices="randomized_spiral_qmc",
+            seed=t,
         )
         errors_uniform[t, j] = np.abs(sw_uniform - sw_true)
         errors_rqsw[t, j] = np.abs(sw_rqsw - sw_true)
 
     sw_qsw = ot.sliced_wasserstein_distance(
-        Xs, Xt, n_projections=n_proj, sampling_slices="qsw"
+        Xs, Xt, n_projections=n_proj, sampling_slices="spiral_qmc"
     )
     errors_qsw[j] = np.abs(sw_qsw - sw_true)
 

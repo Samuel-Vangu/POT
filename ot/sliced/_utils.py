@@ -240,7 +240,7 @@ def get_projections_spiral(
 ):
     r"""
     Generates n_projections points on the sphere via generalized
-    spiral points (Rakhmanov, Saff & Zhou, 1994).
+    spiral points (Rakhmanov, Saff & Zhou, 1994) [96].
 
     Only implemented for d=3 (the 2-sphere :math:`S^2`).
 
@@ -278,10 +278,15 @@ def get_projections_spiral(
     >>> np.allclose(np.sum(np.square(rprojs), 0), 1.)  # doctest: +NORMALIZE_WHITESPACE
     True
 
+    References
+    ----------
+
+    .. [95] Nguyen, K., Bariletto, N., & Ho, N. (2024). "Quasi-Monte Carlo for 3D Sliced Wasserstein." International Conference on Learning Representations (ICLR).
+    .. [96] Rakhmanov, E. A., Saff, E. B., & Zhou, Y. M. (1994). "Minimal Discrete Energy on the Sphere." Mathematical Research Letters, 1(6), 647-662.
     """
     if d != 3:
         raise ValueError(
-            f"get_projections_spiral is only implemented for d=3, got d={d}"
+            f"Generalized spiral points are only defined for d=3, got d={d}."
         )
 
     if backend is None:
@@ -289,9 +294,6 @@ def get_projections_spiral(
     else:
         nx = backend
 
-    # sin/cos are not exposed by the backend abstraction (only arccos, atan2
-    # exist), so the deterministic point construction is done in plain NumPy
-    # and converted to the target backend at the end.
     i = np.arange(1, n_projections + 1)
     z = 1 - (2 * i - 1) / n_projections
     phi1 = np.arccos(z)

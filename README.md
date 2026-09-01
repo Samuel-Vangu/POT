@@ -486,3 +486,5 @@ Artificial Intelligence.
 
 \[95] Nguyen, K., Bariletto, N., & Ho, N. (2024). [Quasi-Monte Carlo for 3D Sliced Wasserstein](https://arxiv.org/abs/2309.11713). International Conference on Learning Representations (ICLR).
 
+\[96] Rakhmanov, E. A., Saff, E. B., & Zhou, Y. M. (1994). [Minimal Discrete Energy on the Sphere](https://www.math.vanderbilt.edu/~esaff/texts/155.pdf). Mathematical Research Letters, 1(6), 647-662.
+

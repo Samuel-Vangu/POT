@@ -1,19 +1,13 @@
 # Releases
-## 0.9.8dev
-*August 2026*
-
-#### New features
-
-- Add Quasi-Monte Carlo sliced Wasserstein sampling (QSW/RQSW) via generalized
-  spiral points, selectable with `sampling_slices` in `sliced_wasserstein_distance`,
-  as described in [93] (PR #838)
-
 
 ## 0.9.8dev
 
 #### New features
 
 - Add stereographic spherical sliced Wasserstein distance in `ot.sliced.stereographic_sliced_wasserstein_sphere`, with its rotationally invariant extension (PR #836)
+- Add Quasi-Monte Carlo sliced Wasserstein sampling (QSW/RQSW) via generalized
+  spiral points, selectable with `sampling_slices` in `sliced_wasserstein_distance`,
+  as described in [95] (PR #838)
 
 #### Closed issues
 

@@ -439,7 +439,7 @@ def test_get_projections_spiral_deterministic_ignores_seed():
     np.testing.assert_allclose(p1, p2)
 
 
-@pytest.mark.parametrize("sampling_slices", ["qsw", "rqsw"])
+@pytest.mark.parametrize("sampling_slices", ["spiral_qmc", "randomized_spiral_qmc"])
 def test_sliced_qsw_same_dist(sampling_slices):
     """Same distribution -> SWD approx 0, mirrors test_sliced_same_dist."""
     n = 100
@@ -453,7 +453,7 @@ def test_sliced_qsw_same_dist(sampling_slices):
     np.testing.assert_almost_equal(res, 0.0)
 
 
-@pytest.mark.parametrize("sampling_slices", ["qsw", "rqsw"])
+@pytest.mark.parametrize("sampling_slices", ["spiral_qmc", "randomized_spiral_qmc"])
 def test_sliced_qsw_different_dists(sampling_slices):
     """Different distributions -> SWD > 0, mirrors test_sliced_different_dists."""
     n = 100
@@ -477,9 +477,9 @@ def test_sliced_invalid_sampling_slices():
         ot.sliced_wasserstein_distance(x, x, sampling_slices="not_a_real_method")
 
 
-@pytest.mark.parametrize("sampling_slices", ["qsw", "rqsw"])
+@pytest.mark.parametrize("sampling_slices", ["spiral_qmc", "randomized_spiral_qmc"])
 def test_sliced_qsw_wrong_dim_raises(sampling_slices):
-    """qsw/rqsw are only implemented for dim=3; other dims must raise."""
+    """spiral_qmc/randomized_spiral_qmc are only implemented for dim=3; other dims must raise."""
     n = 20
     rng = np.random.RandomState(0)
     x = rng.randn(n, 5)
@@ -487,9 +487,9 @@ def test_sliced_qsw_wrong_dim_raises(sampling_slices):
         ot.sliced_wasserstein_distance(x, x, sampling_slices=sampling_slices)
 
 
-@pytest.mark.parametrize("sampling_slices", ["qsw", "rqsw"])
+@pytest.mark.parametrize("sampling_slices", ["spiral_qmc", "randomized_spiral_qmc"])
 def test_sliced_qsw_backend(nx, sampling_slices):
-    """qsw/rqsw must work identically across backends, mirrors test_sliced_backend."""
+    """spiral_qmc/randomized_spiral_qmc must work identically across backends, mirrors test_sliced_backend."""
     n = 100
     rng = np.random.RandomState(0)
     x = rng.randn(n, 3)
@@ -505,7 +505,7 @@ def test_sliced_qsw_backend(nx, sampling_slices):
     )
 
     assert nx.to_numpy(val) > 0
-    if sampling_slices == "qsw":
+    if sampling_slices == "spiral_qmc":
         # Deterministic: identical seed or not, result must be identical.
         assert val == val2
     else:
@@ -537,7 +537,7 @@ def test_qsw_matches_across_backends():
             X_s_b,
             X_t_b,
             n_projections=n_projections,
-            sampling_slices="qsw",
+            sampling_slices="spiral_qmc",
             log=True,
         )
         results[nx.__name__] = nx.to_numpy(val)
@@ -593,7 +593,7 @@ def test_rqsw_seed_does_not_match_across_backends():
             X_t_b,
             n_projections=n_projections,
             seed=0,
-            sampling_slices="rqsw",
+            sampling_slices="randomized_spiral_qmc",
         )
         results[nx.__name__] = float(nx.to_numpy(val))
 
@@ -638,13 +638,17 @@ def test_sliced_qsw_beats_uniform_d3():
             X_s, X_t, n_projections=n_projections, seed=seed, sampling_slices="uniform"
         )
         val_rqsw = ot.sliced_wasserstein_distance(
-            X_s, X_t, n_projections=n_projections, seed=seed, sampling_slices="rqsw"
+            X_s,
+            X_t,
+            n_projections=n_projections,
+            seed=seed,
+            sampling_slices="randomized_spiral_qmc",
         )
         uniform_errors.append(abs(val_uniform - reference))
         rqsw_errors.append(abs(val_rqsw - reference))
 
     val_qsw = ot.sliced_wasserstein_distance(
-        X_s, X_t, n_projections=n_projections, sampling_slices="qsw"
+        X_s, X_t, n_projections=n_projections, sampling_slices="spiral_qmc"
     )
     qsw_error = abs(val_qsw - reference)
 
